@@ -1,7 +1,8 @@
 from pathlib import Path
 import pandas as pd
 
-raw_data_dir = Path("data/raw")
+project_root = Path(__file__).resolve().parents[2]
+raw_data_dir = project_root / "data" / "raw"
 
 def load_season(file_name: str) -> pd.DataFrame:
     path = raw_data_dir / file_name
