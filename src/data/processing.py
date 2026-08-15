@@ -1,7 +1,10 @@
 from data.load import load_all_seasons
 from data.validation import validate_matches
 from data.cleaning import clean_matches
+
+from pathlib import Path
 import pandas as pd
+
 
 def process_matches() -> pd.DataFrame:
     df = load_all_seasons()
@@ -13,3 +16,12 @@ def process_matches() -> pd.DataFrame:
     validate_matches(df)
 
     return df
+
+def move_to_processed_data(df: pd.DataFrame):
+    project_root = Path(__file__).resolve().parents[2]
+    processed_data_dir = project_root / "data" / "processed"
+
+    df.to_csv(
+        processed_data_dir / "processed_data.csv",
+        index=False
+    )
