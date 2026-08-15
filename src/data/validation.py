@@ -24,6 +24,9 @@ def validate_columns(df):
 
 
 def validate_fixture_ids(df):
+    if df["fixture_id"].isna().any():
+        raise ValueError("Missing fixture IDs found")
+
     if df["fixture_id"].duplicated().any():
         raise ValueError("Duplicate fixture IDs found")
 
@@ -33,8 +36,17 @@ def validate_teams(df):
         raise ValueError("Home team and away team cannot be the same")
 
 
-def validate_finished_scores(df):
+def validate_scores(df):
     finished = df[df["status"] == "FT"]
 
-    if finished[["home_goals", "away_goals"]].isna().any().any():
-        raise ValueError("Finished matches contain missing scores")
+    if (finished["home_goals"] < 0).any():
+        raise ValueError("Home goals cannot be negative")
+
+    if (finished["away_goals"] < 0).any():
+        raise ValueError("Away goals cannot be negative")
+
+def validate_matches(df):
+    validate_columns(df)
+    validate_fixture_ids(df)
+    validate_teams(df)
+    validate_scores(df)

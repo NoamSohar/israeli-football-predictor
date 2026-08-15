@@ -11,9 +11,9 @@ def load_season(file_name: str) -> pd.DataFrame:
 
     return pd.read_csv(path)
 
-def load_all_seasons(file_name: str) -> pd.DataFrame:
+def load_all_seasons() -> pd.DataFrame:
 
-    file_names = raw_data_dir.glob("*.csv")
+    file_names = list(raw_data_dir.glob("*.csv"))
 
     if not file_names:
         raise FileNotFoundError("No match files found in data/raw")
