@@ -1,10 +1,11 @@
 import pandas as pd
 
 class EloCalculator:
-    def __init__(self, starting_elo: float=1500, k: int=20):
+    def __init__(self, matches: pd.DataFrame, starting_elo: float=1500, k: int=20):
         self.starting_elo = starting_elo
         self.k = k
         self.ratings = {}
+        self.matches = matches
 
     def get_elo(self, team_id: int) -> float:
         if team_id not in self.ratings:
@@ -48,8 +49,8 @@ class EloCalculator:
                 * (away_score - away_chance)
         )
 
-    def add_features(self, matches: pd.DataFrame) -> pd.DataFrame:
-        df = matches.copy()
+    def add_features(self) -> pd.DataFrame:
+        df = self.matches.copy()
         df = df.sort_values("date").reset_index(drop=True)
 
         home_elos = []
@@ -74,8 +75,6 @@ class EloCalculator:
 
         df["home_elo"] = home_elos
         df["away_elo"] = away_elos
-        df["elo_diff"] = (
-                df["home_elo"] - df["away_elo"]
-        )
+        df["elo_diff"] = (df["home_elo"] - df["away_elo"])
 
         return df
