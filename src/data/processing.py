@@ -26,7 +26,7 @@ def save_processed_data(df: pd.DataFrame):
         index=False
     )
 
-def delete_processed_data(df: pd.DataFrame):
+def delete_processed_data():
     """
     mainly for debugging and testing purposes
     """
