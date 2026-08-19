@@ -90,9 +90,11 @@ class FormCalculator:
             &
             (self.matches["date"] >= utils.get_start_of_season(match_date, self.matches))
             &
-            (self.matches["home_team_id"] == team_id)
-            |
-            (self.matches["away_team_id"] == team_id)
+            (
+                (self.matches["home_team_id"] == team_id)
+                |
+                (self.matches["away_team_id"] == team_id)
+            )
         ]
 
         if previous_matches.empty:
@@ -111,7 +113,7 @@ class FormCalculator:
             elif not is_home and match["away_goals"] > match["home_goals"]:
                 points += 3
 
-        return points / len(previous_matches)
+        return round((points / len(previous_matches)), 2)
 
     def add_features(self) -> pd.DataFrame:
         df = self.matches.copy()
