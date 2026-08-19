@@ -4,7 +4,6 @@ from data.cleaning import clean_matches
 
 from pathlib import Path
 import pandas as pd
-import os
 
 def process_matches() -> pd.DataFrame:
     df = load_all_seasons()
@@ -25,12 +24,3 @@ def save_processed_data(df: pd.DataFrame):
         processed_data_dir / "processed_data.csv",
         index=False
     )
-
-def delete_processed_data():
-    """
-    mainly for debugging and testing purposes
-    """
-    project_root = Path(__file__).resolve().parents[2]
-    processed_data_dir = project_root / "data" / "processed" / "processed_data.csv"
-
-    os.remove(processed_data_dir)
