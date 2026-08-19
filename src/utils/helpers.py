@@ -8,7 +8,8 @@ def delete_processed_data():
     project_root = Path(__file__).resolve().parents[2]
     processed_data_path = project_root / "data" / "processed" / "processed_data.csv"
 
-    processed_data_path.unlink()
+    if processed_data_path.exists():
+        processed_data_path.unlink()
 
 def get_start_of_season(match_date: pd.Timestamp, matches: pd.DataFrame) -> pd.Timestamp:
     previous_matches = matches[matches["date"] <= match_date]
