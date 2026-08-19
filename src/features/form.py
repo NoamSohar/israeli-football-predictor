@@ -1,4 +1,5 @@
 import pandas as pd
+from src import utils
 
 class FormCalculator:
     def __init__(self, matches: pd.DataFrame, last_games: int = 5):
@@ -83,6 +84,35 @@ class FormCalculator:
 
         return points / self.last_games
 
+    def get_seasonal_ppg(self, team_id: int, match_date: pd.Timestamp):
+        previous_matches = self.matches[
+            (self.matches["date"] < match_date)
+            &
+            (self.matches["date"] >= utils.get_start_of_season(match_date, self.matches))
+            &
+            (self.matches["home_team_id"] == team_id)
+            |
+            (self.matches["away_team_id"] == team_id)
+        ]
+
+        if previous_matches.empty:
+            return None
+
+        points = 0
+        for _, match in previous_matches.iterrows():
+            is_home = match["home_team_id"] == team_id
+
+            if match["home_goals"] == match["away_goals"]:
+                points += 1
+
+            elif is_home and match["home_goals"] > match["away_goals"]:
+                points += 3
+
+            elif not is_home and match["away_goals"] > match["home_goals"]:
+                points += 3
+
+        return points / len(previous_matches)
+
     def add_features(self) -> pd.DataFrame:
         df = self.matches.copy()
 
@@ -92,10 +122,27 @@ class FormCalculator:
         home_home_forms = []
         away_away_forms = []
 
+        season_form_home = []
+        season_form_away = []
+
         for _, match in df.iterrows():
             home_team_id = match["home_team_id"]
             away_team_id = match["away_team_id"]
             match_date = match["date"]
+
+            season_form_home.append(
+                self.get_seasonal_ppg(
+                    home_team_id,
+                    match_date
+                )
+            )
+
+            season_form_away.append(
+                self.get_seasonal_ppg(
+                    away_team_id,
+                    match_date
+                )
+            )
 
             home_forms.append(
                 self.get_team_form(
@@ -130,5 +177,8 @@ class FormCalculator:
 
         df[f"home_home_form_{self.last_games}"] = home_home_forms
         df[f"away_away_form_{self.last_games}"] = away_away_forms
+
+        df["home_season_form"] = season_form_home
+        df["away_season_form"] = season_form_away
 
         return df
