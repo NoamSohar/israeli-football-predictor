@@ -1,4 +1,5 @@
 import pandas as pd
+from src import utils
 
 class GoalCalculator:
     def __init__(self, matches: pd.DataFrame, last_games: int=5):
@@ -36,15 +37,62 @@ class GoalCalculator:
 
         return  goals_scored / self.last_games, goals_scored_against_team / self.last_games
 
+    def get_season_average_goals(self, team_id: int, match_date: pd.Timestamp):
+        previous_matches = self.matches[
+            (self.matches["date"] < match_date)
+            &
+            (self.matches["date"] >= utils.get_start_of_season(match_date, self.matches))
+            &
+            (
+                (self.matches["home_team_id"] == team_id)
+                |
+                (self.matches["away_team_id"] == team_id)
+            )
+        ]
+
+        if previous_matches.empty:
+            return None
+
+        goals = 0
+        goals += previous_matches.loc[
+            previous_matches["home_team_id"] == team_id,
+            "home_goals"
+        ].sum()
+
+        goals += previous_matches.loc[
+            previous_matches["away_team_id"] == team_id,
+            "away_goals"
+        ].sum()
+
+        return goals / len(previous_matches)
+
+
     def add_features(self) -> pd.DataFrame:
         df = self.matches.copy()
 
         home_goals_scored = []
         home_goals_scored_against = []
+
         away_goals_scored = []
         away_goals_scored_against = []
 
+        season_average_goals_home = []
+        season_average_goals_away = []
+
         for _, match in df.iterrows():
+            home_season_goals = self.get_season_average_goals(
+                match["home_team_id"],
+                match["date"]
+            )
+
+            away_season_goals = self.get_season_average_goals(
+                match["away_team_id"],
+                match["date"]
+            )
+
+            season_average_goals_home.append(home_season_goals)
+            season_average_goals_away.append(away_season_goals)
+
             home_goals = self.get_team_goals(
                 match["home_team_id"],
                 match["date"]
@@ -74,5 +122,8 @@ class GoalCalculator:
 
         df[f"away_goals_scored_{self.last_games}"] = away_goals_scored
         df[f"away_goals_against_{self.last_games}"] = away_goals_scored_against
+
+        df["home_season_goals_per_game"] = season_average_goals_home
+        df["away_season_goals_per_game"] = season_average_goals_away
 
         return df
