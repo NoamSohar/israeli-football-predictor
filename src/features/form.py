@@ -38,11 +38,14 @@ class FormCalculator:
 
         return points / self.last_games
 
-    def get_home_form(self, team_id: int, match_date):
+    def get_location_specific_form(self, team_id: int, match_date, location: str):
+        if location not in ("home", "away"):
+            raise ValueError("location must be 'home' or 'away'")
+
         previous_matches = self.matches[
             (self.matches["date"] < match_date)
             &
-            (self.matches["home_team_id"] == team_id)
+            (self.matches[f"{location}_team_id"] == team_id)
             ]
 
         if len(previous_matches) < self.last_games:
@@ -52,34 +55,12 @@ class FormCalculator:
 
         points = 0
 
+        counter_location = "home" if location == "away" else "away"
         for _, match in previous_matches.iterrows():
-            if match["home_goals"] > match["away_goals"]:
+            if match[f"{location}_goals"] > match[f"{counter_location}_goals"]:
                 points += 3
 
-            elif match["home_goals"] == match["away_goals"]:
-                points += 1
-
-        return points / self.last_games
-
-    def get_away_form(self, team_id: int, match_date):
-        previous_matches = self.matches[
-            (self.matches["date"] < match_date)
-            &
-            (self.matches["away_team_id"] == team_id)
-            ]
-
-        if len(previous_matches) < self.last_games:
-            return None
-
-        previous_matches = previous_matches.tail(self.last_games)
-
-        points = 0
-
-        for _, match in previous_matches.iterrows():
-            if match["away_goals"] > match["home_goals"]:
-                points += 3
-
-            elif match["away_goals"] == match["home_goals"]:
+            elif match[f"{location}_goals"] == match[f"{counter_location}_goals"]:
                 points += 1
 
         return points / self.last_games
@@ -161,16 +142,18 @@ class FormCalculator:
             )
 
             home_home_forms.append(
-                self.get_home_form(
+                self.get_location_specific_form(
                     home_team_id,
-                    match_date
+                    match_date,
+                    "home"
                 )
             )
 
             away_away_forms.append(
-                self.get_away_form(
+                self.get_location_specific_form(
                     away_team_id,
-                    match_date
+                    match_date,
+                    "away"
                 )
             )
 
