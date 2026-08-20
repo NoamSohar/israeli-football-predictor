@@ -23,7 +23,6 @@ class FormCalculator:
         previous_matches = previous_matches.tail(self.last_games)
 
         points = 0
-        home_points = 0
         for _, match in previous_matches.iterrows():
             is_home = match["home_team_id"] == team_id
 
