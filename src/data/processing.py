@@ -1,6 +1,6 @@
-from data.load import load_all_seasons
-from data.validation import validate_matches
-from data.cleaning import clean_matches
+from src.data.load import load_all_seasons
+from src.data.validation import validate_matches
+from src.data.cleaning import clean_matches
 
 from pathlib import Path
 import pandas as pd
