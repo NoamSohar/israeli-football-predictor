@@ -1,18 +1,20 @@
 import pandas as pd
+from xgboost import XGBClassifier
 
 class ModelTrainer:
-    def __init__(self, dataset_path: str, feature_columns: list[str]):
+    def __init__(self, dataset_path: str, feature_columns: list[str], model_params: dict):
         self.dataset_path = dataset_path
         self.feature_columns = feature_columns
 
         self.df = None
         self.model = None
+        self.model_params = model_params
 
-        self.X_train = None
-        self.X_test = None
+        self.x_train = None
         self.y_train = None
-        self.y_test = None
 
+        self.x_val = None
+        self.y_val = None
 
     def load_data(self):
         self.df = pd.read_csv(self.dataset_path)
@@ -21,21 +23,25 @@ class ModelTrainer:
         self.df = self.df.sort_values("date").reset_index(drop=True)
 
 
-    def split_data(self, train_ratio: float = 0.8):
+    def split_data(self, validation_days: int=30):
         x = self.df[self.feature_columns]
         y = self.df["result"]
 
-        split_index = int(len(self.df) * train_ratio)
+        last_date = self.df["date"].max()
+        split_date = last_date - pd.Timedelta(validation_days)
 
-        self.X_train = x.iloc[:split_index]
-        self.X_test = x.iloc[split_index:]
+        train_df = self.df[self.df["date"] < split_date]
+        val_df = self.df[self.df["date"] >= split_date]
 
-        self.y_train = y.iloc[:split_index]
-        self.y_test = y.iloc[split_index:]
+        self.x_train = train_df[self.feature_columns]
+        self.y_train = train_df["result"]
 
+        self.x_val = val_df[self.feature_columns]
+        self.y_val = val_df["result"]
 
     def train(self):
-        pass
+        self.model = XGBClassifier(**self.model_params)
+
 
 
     def evaluate(self):
