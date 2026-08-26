@@ -3,9 +3,8 @@ from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
 
 class ModelTrainer:
-    def __init__(self, dataset_path: str, feature_columns: list[str]):
+    def __init__(self, dataset_path: str):
         self.dataset_path = dataset_path
-        self.feature_columns = feature_columns
 
         self.df = None
         self.model = None
@@ -24,7 +23,7 @@ class ModelTrainer:
 
 
     def split_data(self, validation_days: int=30):
-        x = self.df[self.feature_columns]
+        x = self.df.drop("result")
         y = self.df["result"]
 
         last_date = self.df["date"].max()
