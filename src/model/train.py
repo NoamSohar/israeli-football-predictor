@@ -1,14 +1,14 @@
 import pandas as pd
 from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score
 
 class ModelTrainer:
-    def __init__(self, dataset_path: str, feature_columns: list[str], model_params: dict):
+    def __init__(self, dataset_path: str, feature_columns: list[str]):
         self.dataset_path = dataset_path
         self.feature_columns = feature_columns
 
         self.df = None
         self.model = None
-        self.model_params = model_params
 
         self.x_train = None
         self.y_train = None
@@ -39,10 +39,22 @@ class ModelTrainer:
         self.x_val = val_df[self.feature_columns]
         self.y_val = val_df["result"]
 
-    def train(self):
-        self.model = XGBClassifier(**self.model_params)
+    def train(self, model_params: dict):
+        self.model = XGBClassifier(**model_params)
 
-
+        self.model.fit(
+            self.x_train,
+            self.y_train,
+            eval_set = [(self.x_val, self.y_val)],
+            verbose = True
+        )
 
     def evaluate(self):
-        pass
+        predictions = self.model.predict(self.x_val)
+
+        accuracy = accuracy_score(
+            self.y_val,
+            predictions
+        )
+
+        return accuracy
